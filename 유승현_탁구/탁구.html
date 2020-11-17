@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>탁구 Game</title>
+
+  <style media="screen">
+    #paddle1 {
+      position:absolute;
+      left:0px;
+      top:500px;
+      width:30px;
+      height:150px;
+      background-color: skyblue;
+    }
+
+    #paddle2 {
+      position:absolute;
+      right:0px;
+      top:500px;
+      width:30px;
+      height:150px;
+      background-color: pink;
+    }
+
+    #ball {
+      position:absolute;
+      left:800px;
+      top:200px;
+      width:25px;
+      height:25px;
+      background-color: black;
+      border-radius:50%
+    }
+
+    body {
+      background-color: green;
+      display:flex;
+      justify-content:center;
+    }
+
+    .vertical {
+      border-left: 5px solid gray;
+      height: 100%;
+      position: fixed;
+
+    }
+    </style>
+
+  <script type="text/javascript">
+
+    var paddleHeight = 150;
+    var paddleWidth = 30;
+    var movePaddle1 = 0;  //top 움직인 좌표값 저장
+    var movePaddle2 = 0;  //top 움직인 좌표값 저장
+    var topPaddle1 = 250;
+    var topPaddle2 = 250;
+    var topBall = 200;
+    var leftBall = 500;
+    var topSpeedBall = 100;
+    var leftSpeedBall = 0;
+    var score1 = 0;
+    var score2 = 0;
+
+
+
+//==============================================================================
+//공 튀기는 위치 랜덤선정
+  function startBall() {
+  	topBall = 200;
+  	leftBall = 800;
+
+  	if (Math.random() < 0.5) {  //오른쪽 왼쪽 방향 정하기
+  		var side = 1
+  	} else {
+  		var side = -1
+  	}
+  	topSpeedBall = Math.random() * 6 + 5; //위,아래 속도(5~10)
+  	leftSpeedBall = side * (Math.random() * 6 + 5); //좌, 우 속도(5~10)
+    keyPad(); //조작키 사용
+  };
+//==============================================================================
+  function keyPad() { //2인용 조작키
+
+  //키보드 누를 시 paddle이 10px씩 이동
+  document.addEventListener('keydown', function (e) {
+       if (e.keyCode == 87) {  // w paddle1
+        movePaddle1 =- 10;
+       }
+       if (e.keyCode == 83) {  // s paddle1
+        movePaddle1 = 10;
+       }
+       if (e.keyCode == 38) {  // up paddle2
+        movePaddle2 = -10;
+       }
+       if (e.keyCode == 40 ) {  // down paddle2
+        movePaddle2 = 10;
+       }
+
+  });
+
+  //키보드 뗄 시 paddle이 정지
+  document.addEventListener('keyup', function (e) {
+  	if (e.keyCode == 87) {  // w paddle1
+  		movePaddle1 = 0;
+  	}
+  	if (e.keyCode == 83) {  // s paddle1
+  		movePaddle1 = 0;
+  	}
+  	if (e.keyCode == 38 ) { // up paddle2
+  		movePaddle2 = 0;
+  	}
+  	if (e.keyCode == 40) {  // down paddle2
+  		movePaddle2 = 0;
+  	}
+  });
+
+};
+//==============================================================================
+  function lessPaddle() { //1점씩 득점마다 paddle의 길이가 3px씩 줄어듬.
+    var sum = score1 + score2;
+    for(i=1; i<=20; i++) {
+        if((sum>=i) && (sum>1)) {
+          paddleHeight = 150-(3*i);
+          document.getElementById("paddle1").style.height = paddleHeight + "px";
+          document.getElementById("paddle2").style.height = paddleHeight + "px";
+     }
+   }
+ };
+//==============================================================================
+  function gameOver() { //총 score가 20점 시 게임끝
+    var sum = score1 + score2;
+    if(sum >=21 && (score1 > score2))
+    alert("1P Win!\n다시하려면 F5를 누르세요.");
+    else if(sum>=21 && (score1 < score2))
+    alert("2P Win!\n다시하려면 F5를 누르세요.");
+};
+//==============================================================================
+  function setLocation() { //paddle, ball의 위치 지정.
+    //paddle이 움직인 좌표값 저장
+    lessPaddle();
+  	topPaddle1 += movePaddle1;
+  	topPaddle2 += movePaddle2;
+
+
+    //공의 랜덤 속도(5~10)를 공의 죄표값에 더해줌
+  	topBall += topSpeedBall;
+  	leftBall += leftSpeedBall;
+ };
+//==============================================================================
+  function inFrame() {   //paddle, ball이 창을 벗어나지 않게 함.
+
+    setLocation(); //paddle, ball의 위치값을 구하는 함수호출
+
+    //paddle이 창 위쪽 으로 벗어나지 않게 해줌
+    if (topPaddle1 <= 1) { //paddle이 1px보다 작으면
+      topPaddle1 = 1;     //1px로 이동
+    }
+
+    if (topPaddle2 <= 1) { //paddle이 1px보다 작으면
+      topPaddle2 = 1;     //1px로 이동
+    }
+
+
+    //paddle이 창 아래쪽으로 벗어나지 않게 해줌.
+    if (topPaddle1 >= window.innerHeight - paddleHeight) {
+      topPaddle1 = window.innerHeight - paddleHeight;
+    }
+
+    if (topPaddle2 > window.innerHeight - paddleHeight) {
+      topPaddle2 = window.innerHeight - paddleHeight;
+    }
+
+
+    //ball이 창 위, 아래쪽으로 벗어나지 않게 해줌.(벗어나면 방향전환)
+    if (topBall <= 10 || topBall >= window.innerHeight - 35) {
+      topSpeedBall = -topSpeedBall
+    }
+
+};
+//==============================================================================
+  function getScore() { //점수 획득 판정 (paddle에 닿거나 닿지 않을 시)
+      inFrame();
+
+      //1P의 점수 획득
+      if (leftBall >= window.innerWidth - paddleWidth -25) {
+        //paddle2쪽으로의 공의 left가 paddle의 넓이보다 같거나 클 때
+        if (topBall >= topPaddle2 && topBall < topPaddle2 + paddleHeight) {
+          //공 시작점이 paddle2보다 아래, paddle길이 + paddle2의 top위치 보다 위
+          leftSpeedBall =- leftSpeedBall //방향전환
+        } else {
+          score1++;
+          var audio = new Audio('sound.mp3');
+          audio.play();
+          startBall();
+        }
+      }
+
+      //2P의 점수 획득
+    if (leftBall <= paddleWidth) {
+      //paddle1쪽으로의 공의 left가 paddle 넓이보다 같거나 작을 때
+      if (topBall >= topPaddle1 && topBall < topPaddle1 + paddleHeight) {
+        //공 시작점이 Paddle보다 아래, paddle의 길이1 + top위치 보다 위
+        leftSpeedBall =- leftSpeedBall; //방향 전환
+      } else {
+        score2++;
+        var audio = new Audio('sound.mp3');
+        audio.play();
+        startBall();
+      }
+    }
+    gameOver(); //게임끝
+};
+//==============================================================================
+function newUpdate() { //위치, 점수 업데이트
+  document.getElementById("paddle1").style.top = topPaddle1 + "px";
+	document.getElementById("paddle2").style.top = topPaddle2 + "px";
+
+
+	document.getElementById("ball").style.top = topBall + "px";
+	document.getElementById("ball").style.left = leftBall + "px";
+
+  getScore();
+	document.getElementById("score1").innerHTML = score1;
+	document.getElementById("score2").innerHTML = score2;
+
+
+}
+//==============================================================================
+  window.onload = function() { //실행하기
+    alert("시작하려면 확인 또는 Enter를 눌러주세요!(총 20점내기)\n1P: W, S \n2P: ↑, ↓");
+    startBall();
+    setInterval(function() {newUpdate()}, 13); //0.013초
+}
+
+    </script>
+
+
+
+    <body>
+
+
+      <div class="vertical"></div>
+
+      <div style="font-size:100px; color: white;">
+
+      <span style="position:fixed; left: 400px" id="score1">0 </span>
+      <span style="position:fixed; left:1100px" id="score2">0 </span>
+
+      </div>
+
+      <div id="paddle1"> </div>
+
+      <div id="ball"> </div>
+
+      <div id="paddle2"> </div>
+
+    </body>
+
+</html>
